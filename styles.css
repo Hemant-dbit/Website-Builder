@@ -1,0 +1,377 @@
+/*
+ * style.css
+ * This file contains the styles for the Website Builder application's UI.
+ * These styles define the layout, appearance of the toolbar, canvas, and properties panel,
+ * as well as the draggable and dropped elements.
+ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 1rem;
+}
+
+.builder-container {
+    display: grid;
+    grid-template-columns: 250px 1fr 280px;
+    grid-template-rows: 1fr;
+    gap: 1rem;
+    height: calc(100vh - 2rem);
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.toolbar {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.toolbar-title {
+    color: #333;
+    font-size: 1.25rem;
+    font-weight: 600;
+    text-align: center;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 0.75rem;
+}
+
+.element-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.draggable-element {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem;
+    background: #f8f9fa;
+    border: 2px dashed #e0e0e0;
+    border-radius: 8px;
+    cursor: grab;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.draggable-element:hover {
+    background: #e3f2fd;
+    border-color: #2196f3;
+    transform: translateY(-1px);
+}
+
+.draggable-element:active {
+    cursor: grabbing;
+}
+
+.element-icon {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.875rem;
+}
+
+.toolbar-actions {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.toolbar-btn {
+    padding: 0.75rem;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: transform 0.2s ease;
+}
+
+.toolbar-btn:hover {
+    transform: translateY(-1px);
+}
+
+.canvas-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.canvas {
+    min-height: 100%;
+    position: relative;
+    padding: 2rem;
+}
+
+.canvas.drag-over {
+    background: #f0f8ff;
+    border: 2px dashed #2196f3;
+}
+
+.canvas-placeholder {
+    text-align: center;
+    color: #666;
+    margin-top: 6rem;
+}
+
+.canvas-placeholder h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.dropped-element {
+    position: relative;
+    margin: 1rem 0;
+    padding: 0.5rem;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dropped-element:hover {
+    border-color: #e0e0e0;
+}
+
+.dropped-element.selected {
+    border-color: #2196f3;
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+}
+
+.delete-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 24px;
+    height: 24px;
+    background: #f44336;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.dropped-element.selected .delete-btn {
+    display: flex;
+}
+
+.properties-panel {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.panel-title {
+    color: #333;
+    font-size: 1.25rem;
+    font-weight: 600;
+    text-align: center;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.properties-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.no-selection {
+    text-align: center;
+    color: #666;
+    margin-top: 2rem;
+}
+
+.property-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.property-label {
+    font-weight: 500;
+    color: #333;
+    font-size: 0.875rem;
+}
+
+.property-input {
+    padding: 0.5rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 0.875rem;
+}
+
+.property-input:focus {
+    outline: none;
+    border-color: #2196f3;
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+}
+
+.color-input {
+    width: 50px;
+    height: 35px;
+    padding: 0;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.delete-element-btn {
+    background: #f44336;
+    color: white;
+    border: none;
+    padding: 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    margin-top: 1rem;
+}
+
+.delete-element-btn:hover {
+    background: #d32f2f;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .builder-container {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto 1fr;
+        height: auto;
+        min-height: calc(100vh - 2rem);
+    }
+
+    .toolbar {
+        order: 1;
+    }
+
+    .properties-panel {
+        order: 2;
+    }
+
+    .canvas-container {
+        order: 3;
+        min-height: 400px;
+    }
+
+    .toolbar, .properties-panel {
+        padding: 1rem;
+    }
+
+    .element-group {
+        flex-direction: row;
+        overflow-x: auto;
+        gap: 0.5rem;
+    }
+
+    .draggable-element {
+        min-width: 120px;
+        flex-direction: column;
+        text-align: center;
+        gap: 0.5rem;
+    }
+}
+
+/* Element Styles */
+/* These styles are applied to the elements dropped onto the canvas. */
+.dropped-heading {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+    margin: 0.5rem 0;
+}
+
+.dropped-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin: 0.5rem 0;
+}
+
+.dropped-button {
+    padding: 0.75rem 1.5rem;
+    background: #2196f3;
+    color: white;
+    border: none;
+    display: inline-block;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    margin: 0.5rem 0;
+    transition: background 0.2s ease;
+}
+
+.dropped-button:hover {
+    background: #1976d2;
+}
+
+/* Styles for different button sizes (applied via JS, controlled by properties panel) */
+.dropped-button.btn-small {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+.dropped-button.btn-large {
+    padding: 1rem 2rem;
+    font-size: 1.125rem;
+}
+.canvas-container {
+    flex-grow: 1;
+    overflow: auto;
+    padding: 20px;
+    height: calc(100vh - 60px); /* Adjust based on your layout */
+}
+
+/* Preview Mode Styles */
+/* These styles hide the builder UI elements when in preview mode,
+ * showing only the content of the canvas. */
+.preview-mode .toolbar,
+.preview-mode .properties-panel {
+    display: none;
+}
+
+.preview-mode .builder-container {
+    grid-template-columns: 1fr; /* Canvas takes full width */
+}
+
+.preview-mode .dropped-element {
+    /* Remove selection borders and shadows in preview */
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.preview-mode .delete-btn {
+    display: none !important; /* Hide delete button in preview */
+}
+.preview-mode .canvas-container {
+    overflow: auto;
+    height: 100vh;
+}
