@@ -24,55 +24,61 @@ class WebsiteBuilder {
   createUI() {
     const root = document.getElementById("root");
     root.innerHTML = `
-            <div class="builder-container">
-                <!-- Toolbar for draggable elements and actions -->
-                <div class="toolbar">
-                    <h2 class="toolbar-title">Elements</h2>
-                    <div class="element-group">
-                        <!-- Draggable Heading element -->
-                        <div class="draggable-element" draggable="true" data-type="heading">
-                            <div class="element-icon">H</div>
-                            <span>Heading</span>
-                        </div>
-                        <!-- Draggable Image element -->
-                        <div class="draggable-element" draggable="true" data-type="image">
-                            <div class="element-icon">🖼️</div>
-                            <span>Image</span>
-                        </div>
-                        <!-- Draggable Button element -->
-                        <div class="draggable-element" draggable="true" data-type="button">
-                            <div class="element-icon">▢</div>
-                            <span>Button</span>
-                        </div>
-                    </div>
-                    <!-- Toolbar action buttons -->
-                    <div class="toolbar-actions">
-                        <button id="preview-btn" class="toolbar-btn">Preview</button>
-                        <button id="export-btn" class="toolbar-btn">Export HTML</button>
-                    </div>
-                </div>
+    <div class="builder-container">
+      
+      
+      <!-- Toolbar for draggable elements and actions -->
+      <div class="toolbar" id="toolbar">
+        <h2 class="toolbar-title">Elements</h2>
+        <div class="element-group">
+          <!-- Draggable Heading element -->
+          <div class="draggable-element" draggable="true" data-type="heading">
+            <div class="element-icon">H</div>
+            <span>Heading</span>
+          </div>
+          <!-- Draggable Image element -->
+          <div class="draggable-element" draggable="true" data-type="image">
+            <div class="element-icon">🖼️</div>
+            <span>Image</span>
+          </div>
+          <!-- Draggable Button element -->
+          <div class="draggable-element" draggable="true" data-type="button">
+            <div class="element-icon">▢</div>
+            <span>Button</span>
+          </div>
+        </div>
+        <!-- Toolbar action buttons -->
+        <div class="toolbar-actions">
+          <button id="preview-btn" class="toolbar-btn">Preview</button>
+          <button id="export-btn" class="toolbar-btn">Export HTML</button>
+        </div>
+      </div>
 
-                <!-- Canvas area where elements are dropped and arranged -->
-                <div class="canvas-container">
-                    <div id="canvas" class="canvas">
-                        <div class="canvas-placeholder">
-                            <h3>Drag elements here to start building</h3>
-                            <p>Select any element on the canvas to edit its properties</p>
-                        </div>
-                    </div>
-                </div>
+      <!-- Canvas area where elements are dropped and arranged -->
+      <div class="canvas-container">
+        <div id="canvas" class="canvas">
+          <div class="canvas-placeholder">
+            <h3>Drag elements here to start building</h3>
+            <p>Select any element on the canvas to edit its properties</p>
+          </div>
+        </div>
+      </div>
 
-                <!-- Properties Panel for editing selected element's attributes -->
-                <div class="properties-panel">
-                    <h2 class="panel-title">Properties</h2>
-                    <div id="properties-content" class="properties-content">
-                        <p class="no-selection">Select an element to edit its properties</p>
-                    </div>
-                </div>
-            </div>
-        `;
-    // Styles are now loaded from an external stylesheet (style.css)
-    // this.addStyles(); // This line is removed as styles are external
+      <!-- Properties Panel for editing selected element's attributes -->
+      <div class="properties-panel" id="properties-panel">
+        <div class="properties-header">
+          <h2 class="panel-title">Properties</h2>
+          
+        </div>
+        <div id="properties-content" class="properties-content">
+          <p class="no-selection">Select an element to edit its properties</p>
+        </div>
+      </div>
+      
+      <!-- Mobile overlay -->
+      <div class="mobile-overlay" id="mobile-overlay"></div>
+    </div>
+  `;
   }
 
   /**
@@ -83,9 +89,55 @@ class WebsiteBuilder {
     const previewBtn = document.getElementById("preview-btn");
     const exportBtn = document.getElementById("export-btn");
 
+    // NEW: Mobile menu toggle functionality
+    const mobileMenuToggle = document.getElementById("mobile-menu-toggle");
+    const toolbar = document.getElementById("toolbar");
+    const mobileOverlay = document.getElementById("mobile-overlay");
+    const propertiesClose = document.getElementById("properties-close");
+    const propertiesPanel = document.getElementById("properties-panel");
+
+    // Mobile menu toggle
+    if (mobileMenuToggle) {
+      mobileMenuToggle.addEventListener("click", () => {
+        toolbar.classList.toggle("mobile-open");
+        mobileOverlay.classList.toggle("active");
+        document.body.classList.toggle("menu-open");
+      });
+    }
+
+    // Close mobile menu when overlay is clicked
+    if (mobileOverlay) {
+      mobileOverlay.addEventListener("click", () => {
+        toolbar.classList.remove("mobile-open");
+        mobileOverlay.classList.remove("active");
+        propertiesPanel.classList.remove("mobile-open");
+        document.body.classList.remove("menu-open");
+      });
+    }
+
+    // Properties panel close button (mobile)
+    if (propertiesClose) {
+      propertiesClose.addEventListener("click", () => {
+        propertiesPanel.classList.remove("mobile-open");
+        mobileOverlay.classList.remove("active");
+        document.body.classList.remove("menu-open");
+      });
+    }
+
     // Event listeners for draggable elements in the toolbar
     document.querySelectorAll(".draggable-element").forEach((element) => {
       element.addEventListener("dragstart", this.handleDragStart.bind(this));
+
+      // NEW: Add touch events for mobile drag and drop
+      element.addEventListener("touchstart", this.handleTouchStart.bind(this), {
+        passive: false,
+      });
+      element.addEventListener("touchmove", this.handleTouchMove.bind(this), {
+        passive: false,
+      });
+      element.addEventListener("touchend", this.handleTouchEnd.bind(this), {
+        passive: false,
+      });
     });
 
     // Event listeners for the canvas to handle dropping elements
@@ -99,8 +151,76 @@ class WebsiteBuilder {
     // Event listeners for the Preview and Export buttons
     previewBtn.addEventListener("click", this.togglePreview.bind(this));
     exportBtn.addEventListener("click", this.exportHTML.bind(this));
+
+    // NEW: Handle window resize
+    window.addEventListener("resize", this.handleResize.bind(this));
   }
 
+  handleTouchStart(e) {
+    this.touchItem = e.target.closest(".draggable-element");
+    this.touchStartPos = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+    };
+
+    if (this.touchItem) {
+      this.touchItem.style.opacity = "0.7";
+      e.preventDefault();
+    }
+  }
+
+  handleTouchMove(e) {
+  if (!this.touchItem) return;
+
+  e.preventDefault();
+  const touch = e.touches[0];
+  const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+
+  // Visual feedback for drop zones
+  const canvas = document.getElementById("canvas");
+  if (canvas.contains(elementBelow) || elementBelow === canvas) {
+    canvas.classList.add("drag-over");
+    // Add visual feedback to touch item
+    this.touchItem.style.transform = "scale(0.95)";
+  } else {
+    canvas.classList.remove("drag-over");
+    this.touchItem.style.transform = "scale(1)";
+  }
+}
+
+  handleTouchEnd(e) {
+    if (!this.touchItem) return;
+
+    const touch = e.changedTouches[0];
+    const elementBelow = document.elementFromPoint(
+      touch.clientX,
+      touch.clientY
+    );
+    const canvas = document.getElementById("canvas");
+
+    // Check if dropped on canvas
+    if (canvas.contains(elementBelow) || elementBelow === canvas) {
+      const elementType = this.touchItem.dataset.type;
+      this.createElement(elementType);
+
+      // Close mobile toolbar after adding element
+      if (window.innerWidth <= 768) {
+        const toolbar = document.getElementById("toolbar");
+        const mobileOverlay = document.getElementById("mobile-overlay");
+        toolbar.classList.remove("mobile-open");
+        mobileOverlay.classList.remove("active");
+        document.body.classList.remove("menu-open");
+      }
+    }
+
+    // Reset styles
+    canvas.classList.remove("drag-over");
+    if (this.touchItem) {
+      this.touchItem.style.opacity = "";
+    }
+    this.touchItem = null;
+    this.touchStartPos = null;
+  }
   /**
    * Handles the 'dragstart' event for draggable elements.
    * Sets the data-type of the dragged element to be transferred.
@@ -142,6 +262,32 @@ class WebsiteBuilder {
     this.createElement(elementType);
   }
 
+  handleResize() {
+    // Close mobile panels on resize to desktop
+    if (window.innerWidth > 768) {
+      const toolbar = document.getElementById("toolbar");
+      const propertiesPanel = document.getElementById("properties-panel");
+      const mobileOverlay = document.getElementById("mobile-overlay");
+
+      toolbar.classList.remove("mobile-open");
+      propertiesPanel.classList.remove("mobile-open");
+      mobileOverlay.classList.remove("active");
+      document.body.classList.remove("menu-open");
+    }
+  }
+
+  closeMobilePanels() {
+  if (window.innerWidth <= 768) {
+    const toolbar = document.getElementById("toolbar");
+    const propertiesPanel = document.getElementById("properties-panel");
+    const mobileOverlay = document.getElementById("mobile-overlay");
+    
+    toolbar.classList.remove("mobile-open");
+    propertiesPanel.classList.remove("mobile-open");
+    mobileOverlay.classList.remove("active");
+    document.body.classList.remove("menu-open");
+  }
+}
   /**
    * Creates a new element on the canvas based on the specified type.
    * Removes the placeholder if it exists and attaches a delete button.
@@ -232,6 +378,15 @@ class WebsiteBuilder {
       element.classList.add("selected");
       this.selectedElement = element;
       this.updatePropertiesPanel(); // Update panel for the new selection
+
+      // NEW: Open properties panel on mobile when element is selected
+      if (window.innerWidth <= 768) {
+        const propertiesPanel = document.getElementById("properties-panel");
+        const mobileOverlay = document.getElementById("mobile-overlay");
+        propertiesPanel.classList.add("mobile-open");
+        mobileOverlay.classList.add("active");
+        document.body.classList.add("menu-open");
+      }
     } else {
       // If no element was clicked (e.g., clicked on canvas background), deselect all
       this.selectedElement = null;
@@ -321,54 +476,52 @@ class WebsiteBuilder {
 
       case "image":
         const image = this.selectedElement.querySelector(".dropped-image");
-        const container = this.selectedElement; // assume this wraps the image
-        const currentAlign = container.style.textAlign || "left";
+        const container = this.selectedElement; // ✅ Get container for alignment
+        const currentAlign = container.style.textAlign || "left"; // ✅ Check container alignment
 
         propertiesHTML = `
-        <div class="property-group">
-            <label class="property-label" for="image-src">Image URL</label>
-            <input type="url" class="property-input" id="image-src" value="${
-              image.src
-            }">
-        </div>
-        <div class="property-group">
-            <label class="property-label" for="image-alt">Alt Text</label>
-            <input type="text" class="property-input" id="image-alt" value="${
-              image.alt
-            }">
-        </div>
-        <div class="property-group">
-            <label class="property-label" for="image-align">Image Alignment</label>
-            <select class="property-input" id="image-align">
-                <option value="left" ${
-                  currentAlign === "left" ? "selected" : ""
-                }>Left</option>
-                <option value="center" ${
-                  currentAlign === "center" ? "selected" : ""
-                }>Center</option>
-                <option value="right" ${
-                  currentAlign === "right" ? "selected" : ""
-                }>Right</option>
-            </select>
-        </div>
-        <div class="property-group">
-            <label class="property-label" for="image-width">Width</label>
-            <select class="property-input" id="image-width">
-                <option value="100%" ${
-                  image.style.width === "100%" || !image.style.width
-                    ? "selected"
-                    : ""
-                }>Full Width</option>
-                <option value="50%" ${
-                  image.style.width === "50%" ? "selected" : ""
-                }>Half Width</option>
-                <option value="25%" ${
-                  image.style.width === "25%" ? "selected" : ""
-                }>Quarter Width</option>
-            </select>
-        </div>
-        <button class="delete-element-btn">Delete Element</button>
-    `;
+  <div class="property-group">
+      <label class="property-label" for="image-src">Image URL</label>
+      <input type="url" class="property-input" id="image-src" value="${
+        image.src
+      }">
+  </div>
+  <div class="property-group">
+      <label class="property-label" for="image-alt">Alt Text</label>
+      <input type="text" class="property-input" id="image-alt" value="${
+        image.alt
+      }">
+  </div>
+  <div class="property-group">
+      <label class="property-label" for="image-align">Image Alignment</label>
+      <select class="property-input" id="image-align">
+          <option value="left" ${
+            currentAlign === "left" ? "selected" : ""
+          }>Left</option>
+          <option value="center" ${
+            currentAlign === "center" ? "selected" : ""
+          }>Center</option>
+          <option value="right" ${
+            currentAlign === "right" ? "selected" : ""
+          }>Right</option>
+      </select>
+  </div>
+  <div class="property-group">
+      <label class="property-label" for="image-width">Width</label>
+      <select class="property-input" id="image-width">
+          <option value="100%" ${
+            image.style.width === "100%" || !image.style.width ? "selected" : ""
+          }>Full Width</option>
+          <option value="50%" ${
+            image.style.width === "50%" ? "selected" : ""
+          }>Half Width</option>
+          <option value="25%" ${
+            image.style.width === "25%" ? "selected" : ""
+          }>Quarter Width</option>
+      </select>
+  </div>
+  <button class="delete-element-btn">Delete Element</button>
+`;
         break;
 
       case "button":
@@ -486,20 +639,23 @@ class WebsiteBuilder {
     const imageAlign = propertiesContent.querySelector("#image-align");
     if (imageAlign) {
       imageAlign.addEventListener("change", (e) => {
-        const image = this.selectedElement.querySelector(".dropped-image");
+        const container = this.selectedElement; // ✅ Apply to container
+        const image = container.querySelector(".dropped-image");
         const align = e.target.value;
-        image.style.textAlign = align;
+
+        // Apply alignment to container, not image
+        container.style.textAlign = align;
+
+        // Reset image styles
+        image.style.display = "block";
+        image.style.margin = "";
 
         if (align === "center") {
-          image.style.display = "block";
           image.style.margin = "0 auto";
-        } else if (align === "left" || align === "right") {
-          image.style.display = "block";
-          image.style.margin = align === "left" ? "0 auto 0 0" : "0 0 0 auto";
-        } else {
-          // Reset
-          image.style.display = "";
-          image.style.margin = "";
+        } else if (align === "left") {
+          image.style.margin = "0 auto 0 0";
+        } else if (align === "right") {
+          image.style.margin = "0 0 0 auto";
         }
       });
     }
@@ -532,19 +688,16 @@ class WebsiteBuilder {
     const buttonAlign = propertiesContent.querySelector("#button-align");
     if (buttonAlign) {
       buttonAlign.addEventListener("change", (e) => {
-        const button = this.selectedElement.querySelector(".dropped-button");
+        const container = this.selectedElement; // ✅ Apply to container
+        const button = container.querySelector(".dropped-button");
         const align = e.target.value;
-        button.style.textAlign = align;
 
-        button.style.display = "block";
+        // Apply alignment to container, not button
+        container.style.textAlign = align;
 
-        if (align === "center") {
-          button.style.margin = "0 auto";
-        } else if (align === "left") {
-          button.style.margin = "0 auto 0 0";
-        } else if (align === "right") {
-          button.style.margin = "0 0 0 auto";
-        }
+        // Reset button styles
+        button.style.display = "inline-block";
+        button.style.margin = "";
       });
     }
 
@@ -654,45 +807,71 @@ class WebsiteBuilder {
     const elements = canvas.querySelectorAll(".dropped-element");
 
     let html = `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <title>Preview</title>
-      <style>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        padding: 20px;
+        margin: 0;
+        line-height: 1.6;
+      }
+
+      @media (max-width: 768px) {
         body {
-          font-family: sans-serif;
-          padding: 20px;
-          margin: 0;
+          padding: 10px;
         }
+      }
 
-        h2 {
-          margin: 0.5rem 0;
-        }
+      h2 {
+        margin: 0.5rem 0;
+        word-wrap: break-word;
+      }
 
-        img {
-          max-width: 100%;
-        }
+      img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+      }
 
+      button {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 500;
+        margin: 0.5rem 0;
+        transition: background-color 0.2s ease;
+        max-width: 100%;
+        word-wrap: break-word;
+      }
+
+      @media (max-width: 768px) {
         button {
-          padding: 0.75rem 1.5rem;
-          border: none;
-          border-radius: 6px;
-          cursor: pointer;
-          font-size: 1rem;
-          font-weight: 500;
-          margin: 0.5rem 0;
-          transition: background-color 0.2s ease;
-          text-align: left; 
+          padding: 0.6rem 1.2rem;
+          font-size: 0.9rem;
         }
+      }
 
-        button:hover {
-          opacity: 0.9;
+      button:hover {
+        opacity: 0.9;
+      }
+
+      /* Mobile responsive utilities */
+      @media (max-width: 768px) {
+        h2 {
+          font-size: 1.5rem !important;
         }
-      </style>
-    </head>
-    <body>
-  `;
+      }
+    </style>
+  </head>
+  <body>
+`;
 
     elements.forEach((element) => {
       const type = element.dataset.type;
@@ -713,21 +892,20 @@ class WebsiteBuilder {
         const textColor = btn.style.color || "#ffffff";
         const padding = btn.style.padding || "0.75rem 1.5rem";
         const fontSize = btn.style.fontSize || "1rem";
-        const styleAttr = `style="background-color: ${bgColor}; color: ${textColor}; padding: ${padding}; font-size: ${fontSize}; text-align: ${buttonAlign};"`;
         html += `
-  <div style="text-align: ${buttonAlign}; margin: 1rem 0;">
-    <button style="background-color: ${bgColor}; color: ${textColor}; padding: ${padding}; font-size: ${fontSize};">
-      ${btn.textContent}
-    </button>
-  </div>
+<div style="text-align: ${buttonAlign}; margin: 1rem 0;">
+  <button style="background-color: ${bgColor}; color: ${textColor}; padding: ${padding}; font-size: ${fontSize};">
+    ${btn.textContent}
+  </button>
+</div>
 `;
       }
     });
 
     html += `
-      </body>
-    </html>
-  `;
+    </body>
+  </html>
+`;
 
     const previewWindow = window.open();
     previewWindow.document.write(html);
@@ -747,30 +925,33 @@ class WebsiteBuilder {
       '  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n';
     html += "  <title>My Website</title>\n";
     html += "  <style>\n";
-    // Basic global styles for the exported HTML
+    // Enhanced mobile-responsive global styles
     html +=
       '    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; margin: 0; padding: 20px; }\n';
+    html += "    @media (max-width: 768px) { body { padding: 10px; } }\n";
     html +=
       "    .container { max-width: 1200px; margin: 0 auto; padding: 20px; background-color: #fff; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }\n";
-    html += "    h1, h2, h3 { margin: 0.5rem 0; }\n";
+    html += "    @media (max-width: 768px) { .container { padding: 15px; } }\n";
+    html += "    h1, h2, h3 { margin: 0.5rem 0; word-wrap: break-word; }\n";
+    html +=
+      "    @media (max-width: 768px) { h1, h2, h3 { font-size: 1.5rem; } }\n";
     html +=
       "    img { max-width: 100%; height: auto; border-radius: 4px; margin: 0.5rem 0; display: block; }\n";
     html +=
-      "    button { padding: 0.75rem 1.5rem; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 500; margin: 0.5rem 0; transition: background-color 0.2s ease; }\n";
+      "    button { padding: 0.75rem 1.5rem; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 500; margin: 0.5rem 0; transition: background-color 0.2s ease; max-width: 100%; word-wrap: break-word; }\n";
+    html +=
+      "    @media (max-width: 768px) { button { padding: 0.6rem 1.2rem; font-size: 0.9rem; } }\n";
     html += "    button:hover { opacity: 0.9; }\n";
-    // Add specific styles for the exported elements here (can be inline or defined as classes)
-    // For simplicity, we'll rely on inline styles set during property editing.
     html += "  </style>\n";
     html += "</head>\n<body>\n";
     html += '  <div class="container">\n';
 
-    // Iterate through each dropped element and generate its HTML with inline styles
+    // Rest of the export functionality remains the same...
     elements.forEach((element) => {
       const type = element.dataset.type;
 
       if (type === "heading") {
         const heading = element.querySelector(".dropped-heading");
-        // Capture current inline styles for font size, color, and text alignment
         const fontSize = heading.style.fontSize || "2rem";
         const color = heading.style.color || "#333";
         const textAlign = heading.style.textAlign || "left";
@@ -778,12 +959,10 @@ class WebsiteBuilder {
         html += `    <h2 ${style}>${heading.textContent}</h2>\n`;
       } else if (type === "image") {
         const img = element.querySelector(".dropped-image");
-        // Capture image source, alt text, and width
         const widthStyle = img.style.width ? `width: ${img.style.width};` : "";
         html += `    <img src="${img.src}" alt="${img.alt}" style="${widthStyle}">\n`;
       } else if (type === "button") {
         const btn = element.querySelector(".dropped-button");
-        // Capture button text, background color, text color, padding, and font size
         const bgColor = btn.style.backgroundColor || "#2196f3";
         const textColor = btn.style.color || "white";
         const padding = btn.style.padding || "0.75rem 1.5rem";
@@ -796,16 +975,15 @@ class WebsiteBuilder {
     html += "  </div>\n";
     html += "</body>\n</html>";
 
-    // Create a Blob from the HTML string and initiate download
     const blob = new Blob([html], { type: "text/html" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "my-website.html"; // Suggested file name
+    a.download = "my-website.html";
     document.body.appendChild(a);
-    a.click(); // Programmatically click the link to trigger download
-    document.body.removeChild(a); // Clean up the temporary link
-    URL.revokeObjectURL(url); // Release the object URL
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 }
 

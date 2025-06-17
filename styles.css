@@ -339,6 +339,45 @@ body {
     font-size: 0.875rem;
 }
 
+.dropped-element {
+  margin: 10px 0;
+  position: relative;
+  min-height: 40px;
+}
+
+.dropped-element.selected {
+  outline: 2px solid #2196f3;
+  outline-offset: 2px;
+}
+
+.dropped-image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.dropped-button {
+  display: inline-block;
+  min-width: 80px;
+}
+
+/* Mobile improvements */
+@media (max-width: 768px) {
+  .properties-panel.mobile-open {
+    transform: translateX(0);
+    z-index: 1001;
+  }
+  
+  .toolbar.mobile-open {
+    transform: translateX(0);
+    z-index: 1001;
+  }
+  
+  .mobile-overlay.active {
+    display: block;
+    z-index: 1000;
+  }
+}
 .dropped-button.btn-large {
     padding: 1rem 2rem;
     font-size: 1.125rem;
