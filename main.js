@@ -1000,8 +1000,12 @@ class WebsiteBuilder {
         html += `    <h2 ${style}>${heading.textContent}</h2>\n`;
       } else if (type === "image") {
         const img = element.querySelector(".dropped-image");
+        const container = element; // assume this wraps the image
+        const align = container.style.textAlign || "left";
         const widthStyle = img.style.width ? `width: ${img.style.width};` : "";
-        html += `    <img src="${img.src}" alt="${img.alt}" style="${widthStyle}">\n`;
+        html += `    <div style="text-align: ${align}; margin: 1rem 0;">\n`;
+        html += `      <img src="${img.src}" alt="${img.alt}" style="${widthStyle}; display: inline-block;">\n`;
+        html += `    </div>\n`;
       } else if (type === "button") {
         const btn = element.querySelector(".dropped-button");
         const container = element;
