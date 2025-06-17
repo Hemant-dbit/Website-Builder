@@ -321,41 +321,61 @@ class WebsiteBuilder {
 
       case "image":
         const image = this.selectedElement.querySelector(".dropped-image");
+        const container = this.selectedElement; // assume this wraps the image
+        const currentAlign = container.style.textAlign || "left";
+
         propertiesHTML = `
-                    <div class="property-group">
-                        <label class="property-label" for="image-src">Image URL</label>
-                        <input type="url" class="property-input" id="image-src" value="${
-                          image.src
-                        }">
-                    </div>
-                    <div class="property-group">
-                        <label class="property-label" for="image-alt">Alt Text</label>
-                        <input type="text" class="property-input" id="image-alt" value="${
-                          image.alt
-                        }">
-                    </div>
-                    <div class="property-group">
-                        <label class="property-label" for="image-width">Width</label>
-                        <select class="property-input" id="image-width">
-                            <option value="100%" ${
-                              image.style.width === "100%" || !image.style.width
-                                ? "selected"
-                                : ""
-                            }>Full Width</option>
-                            <option value="50%" ${
-                              image.style.width === "50%" ? "selected" : ""
-                            }>Half Width</option>
-                            <option value="25%" ${
-                              image.style.width === "25%" ? "selected" : ""
-                            }>Quarter Width</option>
-                        </select>
-                    </div>
-                    <button class="delete-element-btn">Delete Element</button>
-                `;
+        <div class="property-group">
+            <label class="property-label" for="image-src">Image URL</label>
+            <input type="url" class="property-input" id="image-src" value="${
+              image.src
+            }">
+        </div>
+        <div class="property-group">
+            <label class="property-label" for="image-alt">Alt Text</label>
+            <input type="text" class="property-input" id="image-alt" value="${
+              image.alt
+            }">
+        </div>
+        <div class="property-group">
+            <label class="property-label" for="image-align">Image Alignment</label>
+            <select class="property-input" id="image-align">
+                <option value="left" ${
+                  currentAlign === "left" ? "selected" : ""
+                }>Left</option>
+                <option value="center" ${
+                  currentAlign === "center" ? "selected" : ""
+                }>Center</option>
+                <option value="right" ${
+                  currentAlign === "right" ? "selected" : ""
+                }>Right</option>
+            </select>
+        </div>
+        <div class="property-group">
+            <label class="property-label" for="image-width">Width</label>
+            <select class="property-input" id="image-width">
+                <option value="100%" ${
+                  image.style.width === "100%" || !image.style.width
+                    ? "selected"
+                    : ""
+                }>Full Width</option>
+                <option value="50%" ${
+                  image.style.width === "50%" ? "selected" : ""
+                }>Half Width</option>
+                <option value="25%" ${
+                  image.style.width === "25%" ? "selected" : ""
+                }>Quarter Width</option>
+            </select>
+        </div>
+        <button class="delete-element-btn">Delete Element</button>
+    `;
         break;
 
       case "button":
         const button = this.selectedElement.querySelector(".dropped-button");
+        const buttonContainer = this.selectedElement; // assume this wraps the button
+        const buttonAlign = buttonContainer.style.textAlign || "left";
+
         // Determine current button size based on classes or default
         let currentButtonSize = "medium";
         if (button.classList.contains("btn-small")) {
@@ -365,48 +385,56 @@ class WebsiteBuilder {
         }
 
         propertiesHTML = `
-                    <div class="property-group">
-                        <label class="property-label" for="button-text">Button Text</label>
-                        <input type="text" class="property-input" id="button-text" value="${
-                          button.textContent
-                        }">
-                    </div>
-                    <div class="property-group">
-                        <label class="property-label" for="button-bg">Background Color</label>
-                        <input type="color" class="color-input" id="button-bg" value="${
-                          this.rgbToHex(button.style.backgroundColor) ||
-                          "#2196f3"
-                        }">
-                    </div>
-                    <div class="property-group">
-                        <label class="property-label" for="button-text-color">Text Color</label>
-                        <input type="color" class="color-input" id="button-text-color" value="${
-                          this.rgbToHex(button.style.color) || "#ffffff"
-                        }">
-                    </div>
-                    <div class="property-group">
-                        <label class="property-label" for="button-size">Button Size</label>
-                        <select class="property-input" id="button-size">
-                            <option value="small" ${
-                              currentButtonSize === "small" ? "selected" : ""
-                            }>Small</option>
-                            <option value="medium" ${
-                              currentButtonSize === "medium" ? "selected" : ""
-                            }>Medium</option>
-                            <option value="large" ${
-                              currentButtonSize === "large" ? "selected" : ""
-                            }>Large</option>
-                        </select>
-                    </div>
-                    <button class="delete-element-btn">Delete Element</button>
-                `;
-        break;
-      default:
-        propertiesHTML =
-          '<p class="no-selection">No properties available for this element type.</p>';
+        <div class="property-group">
+            <label class="property-label" for="button-text">Button Text</label>
+            <input type="text" class="property-input" id="button-text" value="${
+              button.textContent
+            }">
+        </div>
+        <div class="property-group">
+            <label class="property-label" for="button-bg">Background Color</label>
+            <input type="color" class="color-input" id="button-bg" value="${
+              this.rgbToHex(button.style.backgroundColor) || "#2196f3"
+            }">
+        </div>
+        <div class="property-group">
+            <label class="property-label" for="button-text-color">Text Color</label>
+            <input type="color" class="color-input" id="button-text-color" value="${
+              this.rgbToHex(button.style.color) || "#ffffff"
+            }">
+        </div>
+        <div class="property-group">
+            <label class="property-label" for="button-size">Button Size</label>
+            <select class="property-input" id="button-size">
+                <option value="small" ${
+                  currentButtonSize === "small" ? "selected" : ""
+                }>Small</option>
+                <option value="medium" ${
+                  currentButtonSize === "medium" ? "selected" : ""
+                }>Medium</option>
+                <option value="large" ${
+                  currentButtonSize === "large" ? "selected" : ""
+                }>Large</option>
+            </select>
+        </div>
+        <div class="property-group">
+            <label class="property-label" for="button-align">Button Alignment</label>
+            <select class="property-input" id="button-align">
+                <option value="left" ${
+                  buttonAlign === "left" ? "selected" : ""
+                }>Left</option>
+                <option value="center" ${
+                  buttonAlign === "center" ? "selected" : ""
+                }>Center</option>
+                <option value="right" ${
+                  buttonAlign === "right" ? "selected" : ""
+                }>Right</option>
+            </select>
+        </div>
+        <button class="delete-element-btn">Delete Element</button>
+    `;
         break;
     }
-
     propertiesContent.innerHTML = propertiesHTML;
 
     // Attach event listeners for the newly rendered property inputs
@@ -455,6 +483,26 @@ class WebsiteBuilder {
     const imageSrc = propertiesContent.querySelector("#image-src");
     const imageAlt = propertiesContent.querySelector("#image-alt");
     const imageWidth = propertiesContent.querySelector("#image-width");
+    const imageAlign = propertiesContent.querySelector("#image-align");
+    if (imageAlign) {
+      imageAlign.addEventListener("change", (e) => {
+        const image = this.selectedElement.querySelector(".dropped-image");
+        const align = e.target.value;
+        image.style.textAlign = align;
+
+        if (align === "center") {
+          image.style.display = "block";
+          image.style.margin = "0 auto";
+        } else if (align === "left" || align === "right") {
+          image.style.display = "block";
+          image.style.margin = align === "left" ? "0 auto 0 0" : "0 0 0 auto";
+        } else {
+          // Reset
+          image.style.display = "";
+          image.style.margin = "";
+        }
+      });
+    }
 
     if (imageSrc) {
       imageSrc.addEventListener("input", (e) => {
@@ -481,6 +529,24 @@ class WebsiteBuilder {
     const buttonTextColor =
       propertiesContent.querySelector("#button-text-color");
     const buttonSize = propertiesContent.querySelector("#button-size");
+    const buttonAlign = propertiesContent.querySelector("#button-align");
+    if (buttonAlign) {
+      buttonAlign.addEventListener("change", (e) => {
+        const button = this.selectedElement.querySelector(".dropped-button");
+        const align = e.target.value;
+        button.style.textAlign = align;
+
+        button.style.display = "block";
+
+        if (align === "center") {
+          button.style.margin = "0 auto";
+        } else if (align === "left") {
+          button.style.margin = "0 auto 0 0";
+        } else if (align === "right") {
+          button.style.margin = "0 0 0 auto";
+        }
+      });
+    }
 
     if (buttonText) {
       buttonText.addEventListener("input", (e) => {
@@ -580,14 +646,14 @@ class WebsiteBuilder {
    * In preview mode, the toolbar and properties panel are hidden, and element borders are removed.
    */
   /**
- * Toggles the preview mode for the builder.
- * In preview mode, the toolbar and properties panel are hidden, and element borders are removed.
- */
-togglePreview() {
-  const canvas = document.getElementById("canvas");
-  const elements = canvas.querySelectorAll(".dropped-element");
+   * Toggles the preview mode for the builder.
+   * In preview mode, the toolbar and properties panel are hidden, and element borders are removed.
+   */
+  togglePreview() {
+    const canvas = document.getElementById("canvas");
+    const elements = canvas.querySelectorAll(".dropped-element");
 
-  let html = `
+    let html = `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -617,6 +683,7 @@ togglePreview() {
           font-weight: 500;
           margin: 0.5rem 0;
           transition: background-color 0.2s ease;
+          text-align: left; 
         }
 
         button:hover {
@@ -627,36 +694,45 @@ togglePreview() {
     <body>
   `;
 
-  elements.forEach((element) => {
-    const type = element.dataset.type;
-    if (type === "heading") {
-      const heading = element.querySelector(".dropped-heading");
-      const style = heading.style.cssText ? `style="${heading.style.cssText}"` : "";
-      html += `<h2 ${style}>${heading.textContent}</h2>`;
-    } else if (type === "image") {
-      const img = element.querySelector(".dropped-image");
-      const style = img.style.cssText ? `style="${img.style.cssText}"` : "";
-      html += `<img src="${img.src}" alt="${img.alt}" ${style}>`;
-    } else if (type === "button") {
-      const btn = element.querySelector(".dropped-button");
-      const bgColor = btn.style.backgroundColor || "#2196f3";
-      const textColor = btn.style.color || "#ffffff";
-      const padding = btn.style.padding || "0.75rem 1.5rem";
-      const fontSize = btn.style.fontSize || "1rem";
-      const styleAttr = `style="background-color: ${bgColor}; color: ${textColor}; padding: ${padding}; font-size: ${fontSize};"`;
-      html += `<button ${styleAttr}>${btn.textContent}</button>`;
-    }
-  });
+    elements.forEach((element) => {
+      const type = element.dataset.type;
+      if (type === "heading") {
+        const heading = element.querySelector(".dropped-heading");
+        const style = heading.style.cssText
+          ? `style="${heading.style.cssText}"`
+          : "";
+        html += `<h2 ${style}>${heading.textContent}</h2>`;
+      } else if (type === "image") {
+        const img = element.querySelector(".dropped-image");
+        const style = img.style.cssText ? `style="${img.style.cssText}"` : "";
+        html += `<img src="${img.src}" alt="${img.alt}" ${style}>`;
+      } else if (type === "button") {
+        const btn = element.querySelector(".dropped-button");
+        const buttonAlign = btn.style.textAlign || "left";
+        const bgColor = btn.style.backgroundColor || "#2196f3";
+        const textColor = btn.style.color || "#ffffff";
+        const padding = btn.style.padding || "0.75rem 1.5rem";
+        const fontSize = btn.style.fontSize || "1rem";
+        const styleAttr = `style="background-color: ${bgColor}; color: ${textColor}; padding: ${padding}; font-size: ${fontSize}; text-align: ${buttonAlign};"`;
+        html += `
+  <div style="text-align: ${buttonAlign}; margin: 1rem 0;">
+    <button style="background-color: ${bgColor}; color: ${textColor}; padding: ${padding}; font-size: ${fontSize};">
+      ${btn.textContent}
+    </button>
+  </div>
+`;
+      }
+    });
 
-  html += `
+    html += `
       </body>
     </html>
   `;
 
-  const previewWindow = window.open();
-  previewWindow.document.write(html);
-  previewWindow.document.close();
-}
+    const previewWindow = window.open();
+    previewWindow.document.write(html);
+    previewWindow.document.close();
+  }
   /**
    * Exports the current state of the canvas as a standalone HTML file.
    * It generates HTML with inline styles for the dropped elements.
