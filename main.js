@@ -170,23 +170,26 @@ class WebsiteBuilder {
   }
 
   handleTouchMove(e) {
-  if (!this.touchItem) return;
+    if (!this.touchItem) return;
 
-  e.preventDefault();
-  const touch = e.touches[0];
-  const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+    e.preventDefault();
+    const touch = e.touches[0];
+    const elementBelow = document.elementFromPoint(
+      touch.clientX,
+      touch.clientY
+    );
 
-  // Visual feedback for drop zones
-  const canvas = document.getElementById("canvas");
-  if (canvas.contains(elementBelow) || elementBelow === canvas) {
-    canvas.classList.add("drag-over");
-    // Add visual feedback to touch item
-    this.touchItem.style.transform = "scale(0.95)";
-  } else {
-    canvas.classList.remove("drag-over");
-    this.touchItem.style.transform = "scale(1)";
+    // Visual feedback for drop zones
+    const canvas = document.getElementById("canvas");
+    if (canvas.contains(elementBelow) || elementBelow === canvas) {
+      canvas.classList.add("drag-over");
+      // Add visual feedback to touch item
+      this.touchItem.style.transform = "scale(0.95)";
+    } else {
+      canvas.classList.remove("drag-over");
+      this.touchItem.style.transform = "scale(1)";
+    }
   }
-}
 
   handleTouchEnd(e) {
     if (!this.touchItem) return;
@@ -277,17 +280,17 @@ class WebsiteBuilder {
   }
 
   closeMobilePanels() {
-  if (window.innerWidth <= 768) {
-    const toolbar = document.getElementById("toolbar");
-    const propertiesPanel = document.getElementById("properties-panel");
-    const mobileOverlay = document.getElementById("mobile-overlay");
-    
-    toolbar.classList.remove("mobile-open");
-    propertiesPanel.classList.remove("mobile-open");
-    mobileOverlay.classList.remove("active");
-    document.body.classList.remove("menu-open");
+    if (window.innerWidth <= 768) {
+      const toolbar = document.getElementById("toolbar");
+      const propertiesPanel = document.getElementById("properties-panel");
+      const mobileOverlay = document.getElementById("mobile-overlay");
+
+      toolbar.classList.remove("mobile-open");
+      propertiesPanel.classList.remove("mobile-open");
+      mobileOverlay.classList.remove("active");
+      document.body.classList.remove("menu-open");
+    }
   }
-}
   /**
    * Creates a new element on the canvas based on the specified type.
    * Removes the placeholder if it exists and attaches a delete button.
@@ -528,6 +531,7 @@ class WebsiteBuilder {
         const button = this.selectedElement.querySelector(".dropped-button");
         const buttonContainer = this.selectedElement; // assume this wraps the button
         const buttonAlign = buttonContainer.style.textAlign || "left";
+        const buttonLink = button.dataset.link || "";
 
         // Determine current button size based on classes or default
         let currentButtonSize = "medium";
@@ -544,18 +548,21 @@ class WebsiteBuilder {
               button.textContent
             }">
         </div>
-        <div class="property-group">
-            <label class="property-label" for="button-bg">Background Color</label>
-            <input type="color" class="color-input" id="button-bg" value="${
-              this.rgbToHex(button.style.backgroundColor) || "#2196f3"
-            }">
-        </div>
-        <div class="property-group">
-            <label class="property-label" for="button-text-color">Text Color</label>
-            <input type="color" class="color-input" id="button-text-color" value="${
-              this.rgbToHex(button.style.color) || "#ffffff"
-            }">
-        </div>
+        <div class="property-group color-row">
+  <div class="color-group">
+    <label class="property-label" for="button-bg">Background Color</label>
+    <input type="color" class="color-input" id="button-bg" value="${
+      this.rgbToHex(button.style.backgroundColor) || "#2196f3"
+    }">
+  </div>
+  <div class="color-group">
+    <label class="property-label" for="button-text-color">Text Color</label>
+    <input type="color" class="color-input" id="button-text-color" value="${
+      this.rgbToHex(button.style.color) || "#ffffff"
+    }">
+  </div>
+</div>
+        
         <div class="property-group">
             <label class="property-label" for="button-size">Button Size</label>
             <select class="property-input" id="button-size">
@@ -584,6 +591,10 @@ class WebsiteBuilder {
                 }>Right</option>
             </select>
         </div>
+        <div class="property-group">
+    <label class="property-label" for="button-link">Link URL</label>
+    <input type="url" class="property-input" id="button-link" value="${buttonLink}" placeholder="https://example.com">
+</div>
         <button class="delete-element-btn">Delete Element</button>
     `;
         break;
@@ -682,6 +693,7 @@ class WebsiteBuilder {
     // Button properties listeners
     const buttonText = propertiesContent.querySelector("#button-text");
     const buttonBg = propertiesContent.querySelector("#button-bg");
+    const buttonLink = propertiesContent.querySelector("#button-link");
     const buttonTextColor =
       propertiesContent.querySelector("#button-text-color");
     const buttonSize = propertiesContent.querySelector("#button-size");
@@ -705,6 +717,21 @@ class WebsiteBuilder {
       buttonText.addEventListener("input", (e) => {
         const button = this.selectedElement.querySelector(".dropped-button");
         button.textContent = e.target.value;
+      });
+    }
+    if (buttonLink) {
+      buttonLink.addEventListener("input", (e) => {
+        const button = this.selectedElement.querySelector(".dropped-button");
+        button.dataset.link = e.target.value;
+
+        // Add visual indicator if link is set
+        if (e.target.value.trim()) {
+          button.style.cursor = "pointer";
+          button.title = `Links to: ${e.target.value}`;
+        } else {
+          button.style.cursor = "default";
+          button.title = "";
+        }
       });
     }
     if (buttonBg) {
@@ -887,18 +914,32 @@ class WebsiteBuilder {
         html += `<img src="${img.src}" alt="${img.alt}" ${style}>`;
       } else if (type === "button") {
         const btn = element.querySelector(".dropped-button");
-        const buttonAlign = btn.style.textAlign || "left";
+        const buttonAlign = element.style.textAlign || "left";
         const bgColor = btn.style.backgroundColor || "#2196f3";
         const textColor = btn.style.color || "#ffffff";
         const padding = btn.style.padding || "0.75rem 1.5rem";
         const fontSize = btn.style.fontSize || "1rem";
-        html += `
+        const linkUrl = btn.dataset.link || "";
+
+        if (linkUrl.trim()) {
+          html += `
+<div style="text-align: ${buttonAlign}; margin: 1rem 0;">
+  <a href="${linkUrl}" target="_blank" style="text-decoration: none;">
+    <button style="background-color: ${bgColor}; color: ${textColor}; padding: ${padding}; font-size: ${fontSize};">
+      ${btn.textContent}
+    </button>
+  </a>
+</div>
+`;
+        } else {
+          html += `
 <div style="text-align: ${buttonAlign}; margin: 1rem 0;">
   <button style="background-color: ${bgColor}; color: ${textColor}; padding: ${padding}; font-size: ${fontSize};">
     ${btn.textContent}
   </button>
 </div>
 `;
+        }
       }
     });
 
@@ -963,12 +1004,26 @@ class WebsiteBuilder {
         html += `    <img src="${img.src}" alt="${img.alt}" style="${widthStyle}">\n`;
       } else if (type === "button") {
         const btn = element.querySelector(".dropped-button");
+        const container = element;
+        const buttonAlign = container.style.textAlign || "left";
         const bgColor = btn.style.backgroundColor || "#2196f3";
         const textColor = btn.style.color || "white";
         const padding = btn.style.padding || "0.75rem 1.5rem";
         const fontSize = btn.style.fontSize || "1rem";
+        const linkUrl = btn.dataset.link || "";
         const style = `style="background-color: ${bgColor}; color: ${textColor}; padding: ${padding}; font-size: ${fontSize};"`;
-        html += `    <button ${style}>${btn.textContent}</button>\n`;
+
+        if (linkUrl.trim()) {
+          html += `    <div style="text-align: ${buttonAlign}; margin: 1rem 0;">\n`;
+          html += `      <a href="${linkUrl}" target="_blank" style="text-decoration: none;">\n`;
+          html += `        <button ${style}>${btn.textContent}</button>\n`;
+          html += `      </a>\n`;
+          html += `    </div>\n`;
+        } else {
+          html += `    <div style="text-align: ${buttonAlign}; margin: 1rem 0;">\n`;
+          html += `      <button ${style}>${btn.textContent}</button>\n`;
+          html += `    </div>\n`;
+        }
       }
     });
 
